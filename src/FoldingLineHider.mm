@@ -50,13 +50,37 @@ static intptr_t sci(NppHandle h, uint32_t msg, uintptr_t w = 0, intptr_t l = 0)
 static std::string configFilePath()
 {
     @autoreleasepool {
-        NSString *dir = [NSHomeDirectory() stringByAppendingPathComponent:@".notepad++"];
-        [[NSFileManager defaultManager] createDirectoryAtPath:dir
-                                  withIntermediateDirectories:YES
-                                                  attributes:nil
-                                                       error:nil];
-        NSString *path = [dir stringByAppendingPathComponent:@"FoldingLineHider.json"];
-        return std::string([path UTF8String]);
+        // Ask the host for its plugin config directory (creates it if needed).
+        // Fall back to ~/.notepad++ if NPPM_GETPLUGINSCONFIGDIR returns empty.
+        char buf[1024] = {};
+        nppData._sendMessage(nppData._nppHandle,
+                             NPPM_GETPLUGINSCONFIGDIR,
+                             (uintptr_t)sizeof(buf),
+                             (intptr_t)buf);
+        NSString *dir;
+        if (buf[0] != '\0') {
+            dir = [NSString stringWithUTF8String:buf];
+        } else {
+            dir = [NSHomeDirectory() stringByAppendingPathComponent:@".notepad++"];
+            [[NSFileManager defaultManager] createDirectoryAtPath:dir
+                                      withIntermediateDirectories:YES
+                                                       attributes:nil
+                                                            error:nil];
+        }
+        NSString *newPath = [dir stringByAppendingPathComponent:@"FoldingLineHider.json"];
+
+        // One-shot migration from the pre-fix location
+        // (~/.notepad++/FoldingLineHider.json → plugins/Config/FoldingLineHider.json).
+        NSString *oldPath = [NSHomeDirectory() stringByAppendingPathComponent:
+                             @".notepad++/FoldingLineHider.json"];
+        NSFileManager *fm = [NSFileManager defaultManager];
+        if (![newPath isEqualToString:oldPath] &&
+            [fm fileExistsAtPath:oldPath] &&
+            ![fm fileExistsAtPath:newPath]) {
+            [fm moveItemAtPath:oldPath toPath:newPath error:nil];
+        }
+
+        return std::string([newPath UTF8String]);
     }
 }
 
