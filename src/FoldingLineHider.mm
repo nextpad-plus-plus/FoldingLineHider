@@ -51,7 +51,7 @@ static std::string configFilePath()
 {
     @autoreleasepool {
         // Ask the host for its plugin config directory (creates it if needed).
-        // Fall back to ~/.notepad++ if NPPM_GETPLUGINSCONFIGDIR returns empty.
+        // Fall back to ~/.nextpad++ if NPPM_GETPLUGINSCONFIGDIR returns empty.
         char buf[1024] = {};
         nppData._sendMessage(nppData._nppHandle,
                              NPPM_GETPLUGINSCONFIGDIR,
@@ -61,7 +61,7 @@ static std::string configFilePath()
         if (buf[0] != '\0') {
             dir = [NSString stringWithUTF8String:buf];
         } else {
-            dir = [NSHomeDirectory() stringByAppendingPathComponent:@".notepad++"];
+            dir = [NSHomeDirectory() stringByAppendingPathComponent:@".nextpad++"];
             [[NSFileManager defaultManager] createDirectoryAtPath:dir
                                       withIntermediateDirectories:YES
                                                        attributes:nil
@@ -70,9 +70,9 @@ static std::string configFilePath()
         NSString *newPath = [dir stringByAppendingPathComponent:@"FoldingLineHider.json"];
 
         // One-shot migration from the pre-fix location
-        // (~/.notepad++/FoldingLineHider.json → plugins/Config/FoldingLineHider.json).
+        // (~/.nextpad++/FoldingLineHider.json → plugins/Config/FoldingLineHider.json).
         NSString *oldPath = [NSHomeDirectory() stringByAppendingPathComponent:
-                             @".notepad++/FoldingLineHider.json"];
+                             @".nextpad++/FoldingLineHider.json"];
         NSFileManager *fm = [NSFileManager defaultManager];
         if (![newPath isEqualToString:oldPath] &&
             [fm fileExistsAtPath:oldPath] &&
@@ -187,7 +187,7 @@ static void about()
         NSAlert *alert = [[NSAlert alloc] init];
         alert.messageText = @"FoldingLineHider v1.1";
         alert.informativeText = @"by leonardchai@gmail.com\n\nmacOS port";
-        alert.icon = [[NSImage alloc] initWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@".notepad++/plugins/Config/logo100px.png"]];
+        alert.icon = [[NSImage alloc] initWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@".nextpad++/plugins/Config/logo100px.png"]];
         [alert addButtonWithTitle:@"OK"];
         [alert runModal];
     }

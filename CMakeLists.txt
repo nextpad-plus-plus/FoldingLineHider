@@ -15,6 +15,6 @@ target_include_directories(FoldingLineHider PRIVATE
     ${NPP_PLUGIN_INCLUDE}
     ${SCINTILLA_INCLUDE})
 target_link_libraries(FoldingLineHider PRIVATE "-framework Cocoa")
-set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.notepad++/plugins/FoldingLineHider")
+set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.nextpad++/plugins/FoldingLineHider")
 set_target_properties(FoldingLineHider PROPERTIES PREFIX "" SUFFIX ".dylib")
 install(TARGETS FoldingLineHider DESTINATION "${PLUGIN_INSTALL_DIR}")
