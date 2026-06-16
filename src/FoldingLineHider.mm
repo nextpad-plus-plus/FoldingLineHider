@@ -51,7 +51,8 @@ static std::string configFilePath()
 {
     @autoreleasepool {
         // Ask the host for its plugin config directory (creates it if needed).
-        // Fall back to ~/.nextpad++ if NPPM_GETPLUGINSCONFIGDIR returns empty.
+        // Fall back to ~/Library/Application Support/Nextpad++/plugins/Config if
+        // NPPM_GETPLUGINSCONFIGDIR returns empty (it does not on shipped versions).
         char buf[1024] = {};
         nppData._sendMessage(nppData._nppHandle,
                              NPPM_GETPLUGINSCONFIGDIR,
@@ -61,7 +62,9 @@ static std::string configFilePath()
         if (buf[0] != '\0') {
             dir = [NSString stringWithUTF8String:buf];
         } else {
-            dir = [NSHomeDirectory() stringByAppendingPathComponent:@".nextpad++"];
+            dir = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory,
+                       NSUserDomainMask, YES).firstObject
+                       stringByAppendingPathComponent:@"Nextpad++/plugins/Config"];
             [[NSFileManager defaultManager] createDirectoryAtPath:dir
                                       withIntermediateDirectories:YES
                                                        attributes:nil
@@ -82,6 +85,21 @@ static std::string configFilePath()
 
         return std::string([newPath UTF8String]);
     }
+}
+
+// The host's plugin config dir (NPPM_GETPLUGINSCONFIGDIR), for resolving bundled
+// resources like the About-dialog logo. Falls back to the macOS app-support base
+// (never a hardcoded ~/.nextpad++ dot-folder).
+static NSString *configDirForResources()
+{
+    char buf[1024] = {};
+    nppData._sendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR,
+                         (uintptr_t)sizeof(buf), (intptr_t)buf);
+    if (buf[0] != '\0')
+        return [NSString stringWithUTF8String:buf];
+    return [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory,
+                NSUserDomainMask, YES).firstObject
+                stringByAppendingPathComponent:@"Nextpad++/plugins/Config"];
 }
 
 static void loadConfig()
@@ -187,7 +205,8 @@ static void about()
         NSAlert *alert = [[NSAlert alloc] init];
         alert.messageText = @"FoldingLineHider v1.1";
         alert.informativeText = @"by leonardchai@gmail.com\n\nmacOS port";
-        alert.icon = [[NSImage alloc] initWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@".nextpad++/plugins/Config/logo100px.png"]];
+        alert.icon = [[NSImage alloc] initWithContentsOfFile:
+                      [configDirForResources() stringByAppendingPathComponent:@"logo100px.png"]];
         [alert addButtonWithTitle:@"OK"];
         [alert runModal];
     }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(FoldingLineHider LANGUAGES CXX OBJCXX)
+project(FoldingLineHider VERSION 1.0.2 LANGUAGES CXX OBJCXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_OBJCXX_STANDARD 17)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
@@ -15,6 +15,8 @@ target_include_directories(FoldingLineHider PRIVATE
     ${NPP_PLUGIN_INCLUDE}
     ${SCINTILLA_INCLUDE})
 target_link_libraries(FoldingLineHider PRIVATE "-framework Cocoa")
-set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.nextpad++/plugins/FoldingLineHider")
+set(PLUGIN_INSTALL_DIR "$ENV{HOME}/Library/Application Support/Nextpad++/plugins/FoldingLineHider")
 set_target_properties(FoldingLineHider PROPERTIES PREFIX "" SUFFIX ".dylib")
+# Stamp version into the dylib Mach-O current_version (Plugins Admin reads it).
+target_link_options(FoldingLineHider PRIVATE "-Wl,-current_version,${PROJECT_VERSION}")
 install(TARGETS FoldingLineHider DESTINATION "${PLUGIN_INSTALL_DIR}")
